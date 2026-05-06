@@ -13,3 +13,31 @@
 - Events involved: `submit` on the form.
 - State to track: whether the form is currently valid and what error messages are shown per field.
 - Why this matters: Planning validation state before coding helps keep the logic clear and avoids buggy form behavior.
+
+# Week 4: Component Architecture
+
+## Component Hierarchy
+```
+RootLayout (Server)
+├── Header (Client - contains ThemeToggle)
+│   └── Nav (Server - uses Link)
+├── main (children)
+│   ├── HomePage (Server)
+│   │   ├── Hero (Server)
+│   │   └── Card (Server - reusable)
+│   └── ContactPage (Server)
+│       └── ContactForm (Client - useState for form fields/errors)
+└── Footer (Server)
+```
+
+## Components Planned
+- **Header**: Client component (needs ThemeToggle with state). Receives no props, holds theme state.
+- **Nav**: Server component. Receives no props, renders navigation links.
+- **Footer**: Server component. Receives no props, renders footer content.
+- **Hero**: Server component. Receives title and description props for homepage hero section.
+- **Card**: Server component. Receives title, description, href props for reusable content blocks.
+- **ThemeToggle**: Client component (useState for theme, useEffect for localStorage).
+- **ContactForm**: Client component (useState for form state and errors).
+
+Client components are marked with "use client" only where needed for interactivity.
+```

@@ -1,4 +1,4 @@
-Week 2 Project: Semantic HTML and CSS Website
+# Week 4 Project: React Component Architecture
 
 Description
 This project is a simple, responsive webpage built using semantic HTML and CSS. It demonstrates the use of proper HTML structure with elements 

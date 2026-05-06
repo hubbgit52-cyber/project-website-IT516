@@ -6,7 +6,7 @@ export default function ContactPage() {
       <h2>Contact</h2>
       <p>
         Use the form below to send a message. The contact page demonstrates a real input-driven experience
-        using vanilla JavaScript for validation and success state.
+        using React hooks for state management and validation.
       </p>
       <p>
         This page shares the theme toggle from the header so the interactive design is consistent across routes.
