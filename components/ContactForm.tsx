@@ -116,6 +116,8 @@ export default function ContactForm() {
         <span id="message-error" className="error-message" role="alert"></span>
       </div>
 
+      <div/>
+
       <button type="submit">Send Message</button>
       <div id="form-status" className="form-status" aria-live="polite"></div>
     </form>
