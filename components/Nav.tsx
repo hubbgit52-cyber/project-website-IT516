@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function SiteNav() {
+export default function Nav() {
   return (
     <nav className="site-nav" aria-label="Main navigation">
       <ul>

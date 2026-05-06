@@ -1,125 +1,126 @@
 "use client";
 
-let contactFormInitialized = false;
-
-function updateStatus(message: string, isSuccess: boolean) {
-  const status = document.getElementById('form-status');
-  if (!status) return;
-  status.textContent = message;
-  status.className = isSuccess ? 'success-message form-status' : 'error-message form-status';
-}
-
-function setFieldError(fieldId: string, message: string) {
-  const error = document.getElementById(`${fieldId}-error`);
-  if (!error) return;
-  error.textContent = message;
-}
-
-function clearFieldErrors() {
-  ['name', 'email', 'message'].forEach((field) => {
-    setFieldError(field, '');
-  });
-}
+import { useState } from 'react';
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function validateField(fieldId: string, value: string) {
-  let error = '';
-  if (fieldId === 'name' && !value.trim()) {
-    error = 'Name is required.';
-  } else if (fieldId === 'email') {
-    if (!value.trim()) {
-      error = 'Email is required.';
-    } else if (!validateEmail(value)) {
-      error = 'Please enter a valid email address.';
-    }
-  } else if (fieldId === 'message' && !value.trim()) {
-    error = 'Please enter a message.';
-  }
-  setFieldError(fieldId, error);
-  return !error;
-}
-
-function initContactForm() {
-  if (contactFormInitialized || typeof window === 'undefined') return;
-  contactFormInitialized = true;
-
-  setTimeout(() => {
-    const form = document.getElementById('contact-form') as HTMLFormElement | null;
-    if (!form) return;
-
-    // Inline validation on blur
-    ['name', 'email', 'message'].forEach((fieldId) => {
-      const input = document.getElementById(fieldId) as HTMLInputElement | HTMLTextAreaElement;
-      if (input) {
-        input.addEventListener('blur', () => {
-          validateField(fieldId, input.value);
-        });
-        input.addEventListener('input', () => {
-          // Clear error on input if previously invalid
-          if (document.getElementById(`${fieldId}-error`)?.textContent) {
-            validateField(fieldId, input.value);
-          }
-        });
-      }
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      updateStatus('', false);
-
-      const formData = new FormData(form);
-      const name = (formData.get('name') as string).trim();
-      const email = (formData.get('email') as string).trim();
-      const message = (formData.get('message') as string).trim();
-
-      const nameValid = validateField('name', name);
-      const emailValid = validateField('email', email);
-      const messageValid = validateField('message', message);
-
-      if (!nameValid || !emailValid || !messageValid) {
-        updateStatus('Please fix the errors above before sending.', false);
-        return;
-      }
-
-      updateStatus('Thank you! Your message has been received.', true);
-      form.reset();
-      clearFieldErrors();
-    });
-  }, 0);
-}
-
 export default function ContactForm() {
-  if (typeof window !== 'undefined') {
-    initContactForm();
-  }
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [status, setStatus] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Clear error on input
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    const value = formData[field as keyof typeof formData];
+    let error = '';
+
+    if (field === 'name' && !value.trim()) {
+      error = 'Name is required.';
+    } else if (field === 'email') {
+      if (!value.trim()) {
+        error = 'Email is required.';
+      } else if (!validateEmail(value)) {
+        error = 'Please enter a valid email address.';
+      }
+    } else if (field === 'message' && !value.trim()) {
+      error = 'Please enter a message.';
+    }
+
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('');
+
+    // Validate all fields
+    const newErrors = {
+      name: !formData.name.trim() ? 'Name is required.' : '',
+      email: !formData.email.trim() ? 'Email is required.' : (!validateEmail(formData.email) ? 'Please enter a valid email address.' : ''),
+      message: !formData.message.trim() ? 'Please enter a message.' : ''
+    };
+
+    setErrors(newErrors);
+
+    const hasErrors = Object.values(newErrors).some(error => error);
+    if (hasErrors) {
+      setStatus('Please fix the errors above before sending.');
+      return;
+    }
+
+    setStatus('Thank you! Your message has been received.');
+    setFormData({ name: '', email: '', message: '' });
+    setErrors({ name: '', email: '', message: '' });
+  };
 
   return (
-    <form id="contact-form" noValidate>
+    <form onSubmit={handleSubmit} noValidate>
       <div className="form-field">
         <label htmlFor="name">Name</label>
-        <input id="name" name="name" type="text" required aria-describedby="name-error" />
-        <span id="name-error" className="error-message" role="alert"></span>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          value={formData.name}
+          onChange={handleChange}
+          onBlur={() => handleBlur('name')}
+          required
+          aria-describedby="name-error"
+        />
+        <span id="name-error" className="error-message" role="alert">{errors.name}</span>
       </div>
 
       <div className="form-field">
         <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" required aria-describedby="email-error" />
-        <span id="email-error" className="error-message" role="alert"></span>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          onBlur={() => handleBlur('email')}
+          required
+          aria-describedby="email-error"
+        />
+        <span id="email-error" className="error-message" role="alert">{errors.email}</span>
       </div>
 
       <div className="form-field">
         <label htmlFor="message">Message</label>
-        <textarea id="message" name="message" rows={5} required aria-describedby="message-error" />
-        <span id="message-error" className="error-message" role="alert"></span>
+        <textarea
+          id="message"
+          name="message"
+          rows={5}
+          value={formData.message}
+          onChange={handleChange}
+          onBlur={() => handleBlur('message')}
+          required
+          aria-describedby="message-error"
+        />
+        <span id="message-error" className="error-message" role="alert">{errors.message}</span>
       </div>
 
-      <div/>
-
       <button type="submit">Send Message</button>
-      <div id="form-status" className="form-status" aria-live="polite"></div>
+      <div className="form-status" aria-live="polite">{status}</div>
     </form>
   );
 }
